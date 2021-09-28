@@ -71,6 +71,27 @@ COMMANDS = {
             'id': 5,
             'size': 1,
         },
+    'SPEEDL':
+        {
+            'id': 6,
+            'size': 8,
+            'default':
+                {
+                    'a': 1.2,
+                    't_min': 0.008,
+                }
+
+        },
+    'STOPL':
+        {
+            'id': 7,
+            'size': 1,
+            'default':
+                {
+                    'a': 1.2,
+                }
+
+        },
     'UNLOCK_PSTOP':
         {
             'id': -1,
@@ -192,7 +213,7 @@ class SpeedJ(object):
     def __init__(self, qd,
                  a=COMMANDS['SPEEDJ']['default']['a'],
                  t_min=COMMANDS['SPEEDJ']['default']['t_min']):
-        """Inits the ServoJ object with command parameters.
+        """Inits the SpeedJ object with command parameters.
 
         Args:
             See class attributes description.
@@ -204,6 +225,34 @@ class SpeedJ(object):
     def __repr__(self):
         return 'speedj([{}, {}, {}, {}, {}, {}], {}, {})'.format(
             *(list(self.qd) + [self.a, self.t_min]))
+
+class SpeedL(object):
+    """Represents SpeedL UR5 command.
+
+    SpeedL command accelerates linearly in Cartesian space and continue with constant tool
+    speed
+
+    Attributes:
+        xd: a numpy array of 6d spatial vector (x, y, z, rx, ry, rz) specifiying the tool velocity. Linear velocity in m/s and rotation velocity in rad/s.
+        a: a float specifying linaer acceleration in m/s^2
+        t_min: a float specifying minimal time before function returns
+    """
+
+    def __init__(self, xd,
+                 a=COMMANDS['SPEEDL']['default']['a'],
+                 t_min=COMMANDS['SPEEDL']['default']['t_min']):
+        """Inits the SpeedL object with command parameters.
+
+        Args:
+            See class attributes description.
+        """
+        self.xd = xd
+        self.a = a
+        self.t_min = t_min
+
+    def __repr__(self):
+        return 'speedl([{}, {}, {}, {}, {}, {}], {}, {})'.format(
+            *(list(self.xd[:3]) + list(self.xd[3:]) + [self.a, self.t_min]))
 
 
 class MoveJ(object):
@@ -309,6 +358,27 @@ class StopJ(object):
 
     def __repr__(self):
         return 'stopj(a={})'.format(self.a)
+
+
+class StopL(object):
+    """Represents StopL UR5 command.
+
+    StopL decelerates tool speed to zero
+
+    Attributes:
+        a: a float specifying tool accleration in m/sˆ2
+    """
+
+    def __init__(self, a):
+        """Inits the StopL object with command parameters.
+
+        Args:
+            See class attributes description.
+        """
+        self.a = a
+
+    def __repr__(self):
+        return 'stopl(a={})'.format(self.a)
 
 
 ZERO_THRESH = 0.00000001;

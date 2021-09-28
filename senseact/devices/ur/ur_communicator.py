@@ -20,9 +20,11 @@ class URCommunicator(Communicator):
     sending currently are:
     - servoj
     - speedj
+    - speedl
     - movej
     - movel
     - stopj
+    - stopl
     - unlock protective stop.
     """
 
@@ -30,6 +32,7 @@ class URCommunicator(Communicator):
                  actuation_sync_period=True,
                  disable_nagle_algorithm=True,
                  speedj_timeout = 0.5,
+                 speedl_timeout=0.5,
                  buffer_len=None
                  ):
         """Inits URCommunicator class with device- and task-specific parameters.
@@ -47,6 +50,7 @@ class URCommunicator(Communicator):
         self._disable_nagle_algorithm = disable_nagle_algorithm
         self._actuation_sync_period = actuation_sync_period
         self._speedj_timeout = speedj_timeout
+        self._speedl_timeout = speedl_timeout
 
         # The number of sensor reads since the last actuator write
         self._num_reads = 0
@@ -213,6 +217,17 @@ class URCommunicator(Communicator):
                     t_min=speedj_values['default']['t_min']
                     if recent_actuation[-1] == ur_utils.USE_DEFAULT else recent_actuation[-1],
                 )
+            elif recent_actuation[0] == ur_utils.COMMANDS['SPEEDL']['id']:
+                if time.time() - time_stamp[-1] > self._speedl_timeout:
+                    return
+                speedl_values = ur_utils.COMMANDS["SPEEDL"]
+                cmd = ur_utils.SpeedL(
+                    xd=recent_actuation[1:1 + 6],
+                    a=speedl_values['default']['a']
+                    if recent_actuation[-2] == ur_utils.USE_DEFAULT else recent_actuation[-2],
+                    t_min=speedl_values['default']['t_min']
+                    if recent_actuation[-1] == ur_utils.USE_DEFAULT else recent_actuation[-1],
+                )
             elif not updated:
                 # The commands below this point should only be executed
                 # if they are new actuations
@@ -247,6 +262,10 @@ class URCommunicator(Communicator):
                 cmd = ur_utils.StopJ(
                     a=recent_actuation[1]
                 )
+            elif recent_actuation[0] == ur_utils.COMMANDS['STOPL']['id']:
+                cmd = ur_utils.StopL(
+                    a=recent_actuation[1]
+                )
             elif recent_actuation[0] == ur_utils.COMMANDS['UNLOCK_PSTOP']['id']:
                 print("Unlocking p-stop")
                 self._dashboard_sock.send('unlock protective stop\n'.encode('ascii'))
@@ -254,6 +273,7 @@ class URCommunicator(Communicator):
             elif recent_actuation[0] == ur_utils.COMMANDS['NOTHING']['id']:
                 return
             else:
+                print("not implemented id", recent_actuation[0])
                 raise NotImplementedError
             cmd_str = '{}\n'.format(cmd)
             self._sock.send(cmd_str.encode('ascii'))
