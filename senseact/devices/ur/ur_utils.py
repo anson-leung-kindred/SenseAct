@@ -13,7 +13,7 @@ DASHBOARD_SERVER_PORT = 29999  # to unlock protective stop
 PRIMARY_CLIENT_INTERFACE_PORT = 30001
 SECONDARY_CLIENT_INTERFACE_PORT = 30002
 REALTIME_COMM_CLIENT_INTERFACE_PORT = 30003
-REALTIME_COMM_PACKET_SIZE = 1060
+REALTIME_COMM_PACKET_SIZE = 1108
 
 COMMANDS = {
     'NOTHING':
@@ -140,6 +140,8 @@ REALTIME_COMM_PACKET = np.dtype(
      ('v_actual', '>f8', (6,)),
      ('digital_outputs', '>f8'),
      ('program_state', '>f8'),
+     ('elbow_position', '>f8', (3)),
+     ('elbow_velocity', '>f8', (3)),
      ])
 
 class SafetyModes(object):
